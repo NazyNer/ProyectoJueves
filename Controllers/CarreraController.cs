@@ -22,19 +22,19 @@ public class CarreraController : Controller {
     }
 
     public JsonResult SearchCarrers(int Id){
-        var carrers = _context.Carreras?.ToList();
+        var carrers = _context.Carreras?.OrderBy(c => c.Name).ToList();
         if (Id > 0)
         {
-            carrers?.Where(c => c.Id == Id).ToList();
+            var carrer = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault() ;
+            return Json(carrer);
         }
-        carrers?.OrderBy(c => c.Name).ToList();
         return Json(carrers);
     }
 
     public JsonResult SaveCarrer(int Id, string Nombre, decimal Duracion){
         var error = new Errors();
         error.NonError = false;
-        error.Msj = "No se pudo gurdar la carrera";
+        error.Msj = "No se pudo guardar la carrera";
         if (Id == 0)
         {
             var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre).FirstOrDefault();
@@ -44,14 +44,65 @@ public class CarreraController : Controller {
                 error.Msj = "Ya existe una con ese nombre"; 
             }else
             {
-                var Carrera = new Carrera(){
+                error.NonError = false;
+                error.Msj = "la duracion no puede ser mas de 9 años"; 
+                if (Duracion < 9)
+                {
+                    var Carrera = new Carrera(){
                     Name = Nombre,
                     Duration = Duracion,
-                };
-                _context.Add(Carrera);
-                _context.SaveChanges();
-                error.NonError = true;
-                error.Msj ="";
+                    };
+                    _context.Add(Carrera);
+                    _context.SaveChanges();
+                    error.NonError = true;
+                    error.Msj ="";
+                }
+                
+            }
+        }else{
+            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre).FirstOrDefault();
+            if (CarreraOriginal != null)
+            {
+                error.NonError = false;
+                error.Msj = "Ya existe una con ese nombre"; 
+            }else
+            {
+                error.NonError = false;
+                error.Msj = "la duracion no puede ser mas de 9 años"; 
+                if (Duracion < 10){
+                    var Carrera = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault();
+                    Carrera.Name = Nombre;
+                    Carrera.Duration = Duracion;
+                    _context.SaveChanges();
+                    error.NonError = true;
+                    error.Msj = "";
+                }
+            }
+        }
+        return Json(error);
+    }
+    public JsonResult DeleteCarrer(int Id){
+        var error = new Errors();
+        error.NonError = false;
+        error.Msj = "No se selecciono niguna carrera";
+        if (Id > 0)
+        {
+            error.NonError = false;
+            error.Msj = "No se encuentra la carrera seleccionada";
+            var carrer = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault();
+            if (carrer != null)
+            {
+                error.NonError = false;
+                error.Msj = "Se encuentran alumno relacionados a esta carrera";
+                var AlumnosRelacionados = _context.Alumnos?.Where(a => a.CarreraId == Id).ToList();
+                if (AlumnosRelacionados.Count == 0)
+                {
+                    _context.Remove(carrer);
+                    _context.SaveChanges();
+                    error.NonError = true;
+                    error.Msj = "";
+                    return Json(error);
+                }
             }
         }
         return Json(error);

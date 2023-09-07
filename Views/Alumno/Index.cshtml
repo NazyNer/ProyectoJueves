@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Carrer";
+}
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Cargar Alumno</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <form id="form-Alumno" method="post" class="Form">
+            <label for="">IdAlumno</label>
+            <input type="text" id="Id" name="Id" disabled>
+            <label for="">Nombre completo</label>
+            <input id="FullName" type="text" name="FullName">
+            <label for="">fecha de nacimiento</label>
+            <input id="Birthdate" type="datetime" name="Birthdate">
+            <label for="">carrera</label>
+            @Html.DropDownList("CarreraID", null, htmlAttributes: new { @class = "form-control"})
+            <label id="lbl-error" style="color: red;"></label>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="SaveStudent()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<h1>Alumnos...</h1>
+<div>
+    <table class="table table-dark table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Nombre completo</th>
+      <th scope="col">Fecha de nacimiento</th>
+      <th scope="col"><button class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Crear Nuevo</button></th>
+      <th scope="col">Carrera</th>
+    </tr>
+  </thead>
+  <tbody id="tbody-Alumno">
+  </tbody>
+</table>
+</div>
+
+@section Scripts {
+    <script src="~/js/alumno.js"></script>
+}
