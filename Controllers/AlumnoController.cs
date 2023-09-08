@@ -44,7 +44,7 @@ public class AlumnoController : Controller {
         Error.NonError = false;
         Error.Mensaje = "Completar datos obligatorios";
         // validacion de que todos los datos obligatorios sean ingresados
-        if (!string.IsNullOrEmpty(FullName) && CarreraId > 0 && Birthdate > DateTime.MinValue)
+        if (!string.IsNullOrEmpty(FullName) && CarreraId > 0)
         {
             Error.NonError = false;
             Error.Mensaje = "Carrera no encontrada";
