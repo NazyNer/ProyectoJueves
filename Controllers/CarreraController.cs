@@ -60,7 +60,7 @@ public class CarreraController : Controller {
                 
             }
         }else{
-            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre).FirstOrDefault();
+            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre && c.Id != Id).FirstOrDefault();
             if (CarreraOriginal != null)
             {
                 error.NonError = false;

@@ -28,25 +28,30 @@ window.onload = function () {
     });
     SearchProfesores();
 }
-
+function FormatearFecha(fecha) {
+    var partes = fecha.split("T")[0].split("-");
+    var fechaFormateada = partes[2] + "-" + partes[1] + "-" + partes[0];
+    return fechaFormateada;
+}
 
 
 function SearchProfesores() {
     let tablaProfesores = $("#tbody-Profesor");
     tablaProfesores.empty();
     $.ajax({
-      url: '../../Profesor/SearchProfesores',
-      data: {},
-      type: 'GET',
-      dataType: 'json',
-      success: function (profesores) {
-        tablaProfesores.empty();
-        $.each(profesores, function (index, profesor) {
-            tablaProfesores.append(`
+        url: '../../Profesor/SearchProfesores',
+        data: {},
+        type: 'GET',
+        dataType: 'json',
+        success: function (profesores) {
+            tablaProfesores.empty();
+            $.each(profesores, function (index, profesor) {
+                var fechaFormateada = FormatearFecha(profesor.birthdate);
+                tablaProfesores.append(`
               <tr>
                   <th scope="row">${profesor.dni}</th>
                   <td>${profesor.fullName}</td>
-                  <td>${profesor.birthdate}</td>
+                  <td>${fechaFormateada}</td>
                   <td>
                    <button title="Editar Profesor" onClick="EditStudent(${profesor.profesorId})">✏</button>
                    <button title="Eliminar Profesor" onClick="DeleteProfesor(${profesor.profesorId})">🗑</button>
@@ -55,31 +60,33 @@ function SearchProfesores() {
                   <td>${profesor.address}</td>
               </tr>
               `);
-        })
-    }
+            })
+        }
     })
 }
 
 function EditStudent(id) {
     $.ajax({
-      url: '../../Profesor/SearchProfesores',
-      data: {Id: id},
-      type: 'GET',
-      dataType: 'json',
-      success: function (students) {
-        console.log(students);
-          if (students[0].profesorId == id) {
-            ClearModal();
-            $("#FullName").val(students[0].fullName);
-            $("#Birthdate").val(students[0].birthdate);
-            $("#Address").val(students[0].address);
-            $("#Dni").val(students[0].dni);
-            $("#Id").val(students[0].profesorId);
-            $("#Email").val(students[0].email);
-            $("#staticBackdrop").modal("show");
-          }
-      }});
-  }
+        url: '../../Profesor/SearchProfesores',
+        data: { Id: id },
+        type: 'GET',
+        dataType: 'json',
+        success: function (students) {
+            var fechaFormateada = FormatearFecha(students[0].birthdate);
+            console.log(students);
+            if (students[0].profesorId == id) {
+                ClearModal();
+                $("#FullName").val(students[0].fullName);
+                $("#Birthdate").val(fechaFormateada);
+                $("#Address").val(students[0].address);
+                $("#Dni").val(students[0].dni);
+                $("#Id").val(students[0].profesorId);
+                $("#Email").val(students[0].email);
+                $("#staticBackdrop").modal("show");
+            }
+        }
+    });
+}
 
 function ClearModal() {
     $("#FullName").val("");
@@ -99,43 +106,51 @@ function SaveProfesor() {
     let Address = $("#Address").val();
     let Dni = $("#Dni").val();
     let Email = $("#Email").val();
-
-    $.ajax({
-        url: '../../Profesor/SaveProfesor',
-        type: 'POST',
-        dataType: 'json',
-        data: { Id: Id, FullName: FullName, Birthdate: Birthdate, Address: Address, Dni: Dni, Email: Email },
-        async: false,
-        success: function (resultado) {
-            console.log(resultado);
-            if (resultado.NonError) {
-                $("#staticBackdrop").modal("hide");
-                SearchProfesores();
-            }
-            else {
-                console.log(resultado);
-                $("#lbl-error").text(resultado.MsjError);
-            }
-        },
-    });
+    if (Dni.length >= 7 && Dni.length <= 8) {
+        if (/^\d+$/.test(valor)) {
+            // La entrada es válida
+            $.ajax({
+                url: '../../Profesor/SaveProfesor',
+                type: 'POST',
+                dataType: 'json',
+                data: { Id: Id, FullName: FullName, Birthdate: Birthdate, Address: Address, Dni: Dni, Email: Email },
+                async: false,
+                success: function (resultado) {
+                    console.log(resultado);
+                    if (resultado.NonError) {
+                        $("#staticBackdrop").modal("hide");
+                        SearchProfesores();
+                    }
+                    else {
+                        console.log(resultado);
+                        $("#lbl-error").text(resultado.MsjError);
+                    }
+                },
+            });
+        }else {
+            $("#lbl-error").text("El DNI debe contener solo números.");
+        }
+    }else{
+        $("#lbl-error").text("El DNI debe tener entre 7 y 8 caracteres.");
+    }
 }
 
 
 function DeleteProfesor(id) {
     $.ajax({
-      url: '../../Profesor/DeleteProfesor',
-      data: {Id: id},
-      type: 'GET',
-      dataType: 'json',
-      success: function (resultado) {
-        if (resultado.NonError) {
-            SearchProfesores();
-        }else{
-          alert(resultado.MsjError);
+        url: '../../Profesor/DeleteProfesor',
+        data: { Id: id },
+        type: 'GET',
+        dataType: 'json',
+        success: function (resultado) {
+            if (resultado.NonError) {
+                SearchProfesores();
+            } else {
+                alert(resultado.MsjError);
+            }
         }
-      }});
-  }
-  
+    });
+}
 
 
 $("#FullName").on("input", function () {

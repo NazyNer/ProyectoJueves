@@ -40,12 +40,13 @@ function SearchStudents() {
     success: function (students) {
       tablaAlumnos.empty();
       $.each(students, function (index, student) {
+        var fechaFormateada = FormatearFecha(student.birthdate);
         if (student.isActive) {
           tablaAlumnos.append(`
             <tr class="table-success">
                 <th scope="row">${student.id}</th>
                 <td>${student.fullName}</td>
-                <td>${student.birthdate}</td>
+                <td>${fechaFormateada}</td>
                 <td>
                   <button title="Desactivar Alumno" onclick="ActiOrDesacStudent(${student.id})">❌</button>
                   <button title="Editar Alumno" onclick="EditStudent(${student.id})">✏</button>
@@ -58,7 +59,7 @@ function SearchStudents() {
             <tr class="table-warning">
                 <th scope="row">${student.id}</th>
                 <td>${student.fullName} (Desactivado)</td>
-                <td>${student.birthdate}</td>
+                <td>${fechaFormateada}</td>
                 <td>
                   <button title="Activar Alumno" onclick="ActiOrDesacStudent(${student.id})">✔</button>
                   <button title="Eliminar Alumno" onclick="DeleteStudent(${student.id})">🗑</button>
@@ -70,6 +71,11 @@ function SearchStudents() {
       })
   }
   })
+}
+function FormatearFecha(fecha) {
+  var partes = fecha.split("T")[0].split("-");
+  var fechaFormateada = partes[2] + "-" + partes[1] + "-" + partes[0];
+  return fechaFormateada;
 }
 
 function ClearModal() {
@@ -113,10 +119,11 @@ function EditStudent(id) {
     dataType: 'json',
     success: function (students) {
       console.log(students);
+      var fechaFormateada = FormatearFecha(students[0].birthdate);
         if (students[0].id == id) {
           ClearModal();
           $("#FullName").val(students[0].fullName);
-          $("#Birthdate").val(students[0].birthdate);
+          $("#Birthdate").val(fechaFormateada);
           $("#CarreraID").val(students[0].carreraId);
           $("#Id").val(students[0].id);
           $("#staticBackdrop").modal("show");
