@@ -74,7 +74,7 @@ function SearchStudents() {
 }
 function FormatearFecha(fecha) {
   var partes = fecha.split("T")[0].split("-");
-  var fechaFormateada = partes[2] + "-" + partes[1] + "-" + partes[0];
+  var fechaFormateada = partes[2] + "/" + partes[1] + "/" + partes[0];
   return fechaFormateada;
 }
 

@@ -30,7 +30,7 @@ window.onload = function () {
 }
 function FormatearFecha(fecha) {
     var partes = fecha.split("T")[0].split("-");
-    var fechaFormateada = partes[2] + "-" + partes[1] + "-" + partes[0];
+    var fechaFormateada = partes[2] + "/" + partes[1] + "/" + partes[0];
     return fechaFormateada;
 }
 
@@ -107,8 +107,8 @@ function SaveProfesor() {
     let Dni = $("#Dni").val();
     let Email = $("#Email").val();
     if (Dni.length >= 7 && Dni.length <= 8) {
-        if (/^\d+$/.test(valor)) {
             // La entrada es válida
+            console.log("llegue");
             $.ajax({
                 url: '../../Profesor/SaveProfesor',
                 type: 'POST',
@@ -127,9 +127,6 @@ function SaveProfesor() {
                     }
                 },
             });
-        }else {
-            $("#lbl-error").text("El DNI debe contener solo números.");
-        }
     }else{
         $("#lbl-error").text("El DNI debe tener entre 7 y 8 caracteres.");
     }
