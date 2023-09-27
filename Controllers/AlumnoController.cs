@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Dynamic;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -38,7 +39,7 @@ public class AlumnoController : Controller {
         return Json(alumnos);
     }
 
-    public JsonResult GuardarAlumno(int Id, string FullName, DateTime Birthdate, int CarreraId)
+    public JsonResult GuardarAlumno(int Id, string FullName, int Dni, string Email, string Address, DateTime Birthdate, int CarreraId)
     {
         dynamic Error = new ExpandoObject();
         Error.NonError = false;
@@ -46,35 +47,59 @@ public class AlumnoController : Controller {
         // validacion de que todos los datos obligatorios sean ingresados
         if (!string.IsNullOrEmpty(FullName) && CarreraId > 0)
         {
-            Error.NonError = false;
-            Error.Mensaje = "Carrera no encontrada";
-            var carreraOriginal = _context.Carreras?.Where(c => c.Id == CarreraId).FirstOrDefault();
-            if (carreraOriginal != null)
-            {
-                Error.NonError = true;
-                Error.Mensaje = "Datos guardados correctamente";
-                if (Id == 0)
+            Error.Mensaje = "Por favor escribir un email real";
+            if (IsValidEmail(Email))
+            {    
+                Error.NonError = false;
+                Error.Mensaje = "Carrera no encontrada";
+                var carreraOriginal = _context.Carreras?.Where(c => c.Id == CarreraId).FirstOrDefault();
+                if (carreraOriginal != null)
                 {
-                    //Crear Alumno
-                    var Alumno = new Alumno{
-                    FullName = FullName,
-                    Birthdate = Birthdate,
-                    CarreraId = carreraOriginal.Id,
-                    CarreraName = carreraOriginal.Name,
-                    IsActive = true
-                    };
-                    _context.Alumnos.Add(Alumno);
-                    _context.SaveChanges();
-                }else{
-                    //Editar Alumno
-                    var Alumno = _context.Alumnos.Where(a => a.Id == Id).FirstOrDefault();
-                    if (Alumno != null)
+                    if (Id == 0)
                     {
-                        Alumno.FullName = FullName;
-                        Alumno.Birthdate = Birthdate;
-                        Alumno.CarreraId = carreraOriginal.Id;
-                        Alumno.CarreraName = carreraOriginal.Name;
-                        _context.SaveChanges();
+                        Error.Mensaje = "Ya existe un alumno con ese DNI";
+                        var AlumnoEmail = _context.Alumnos.Where(p => p.DNI == Dni).FirstOrDefault();
+                        if (AlumnoEmail == null)
+                        {
+                            //Crear Alumno
+                            var Alumno = new Alumno{
+                            FullName = FullName,
+                            Birthdate = Birthdate,
+                            CarreraId = carreraOriginal.Id,
+                            CarreraName = carreraOriginal.Name,
+                            DNI = Dni,
+                            Email = Email,
+                            Address = Address,
+                            IsActive = true
+                            };
+                            _context.Alumnos.Add(Alumno);
+                            _context.SaveChanges();
+                            Error.NonError = true;
+                            Error.Mensaje = "Datos guardados correctamente";
+                        }
+                    }else{
+                        Error.Mensaje = "Ya existe un alumno con ese DNI";
+                        var AlumnoEmail = _context.Alumnos.Where(p => p.DNI == Dni && p.Id != Id).FirstOrDefault();
+                        if (AlumnoEmail == null)
+                        {
+                            //Editar Alumno
+                            Error.Mensaje = "No se encontro el alumno seleccionado";
+                            var Alumno = _context.Alumnos.Where(a => a.Id == Id).FirstOrDefault();
+                            if (Alumno != null)
+                            {
+                                Alumno.FullName = FullName;
+                                Alumno.Birthdate = Birthdate;
+                                Alumno.CarreraId = carreraOriginal.Id;
+                                Alumno.CarreraName = carreraOriginal.Name;
+                                Alumno.DNI = Dni;
+                                Alumno.Email = Email;
+                                Alumno.Address = Address;
+                                _context.SaveChanges();
+                                Error.NonError = true;
+                                Error.Mensaje = "Datos guardados correctamente";
+                            }
+                            
+                        }
                     }
                 }
             }
@@ -120,5 +145,13 @@ public class AlumnoController : Controller {
             _context.SaveChanges();
         }
         return Json(Error);
+    }
+    public static bool IsValidEmail(string email)
+    {
+        // Expresión regular para validar emails
+        string pattern = @"^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$";
+
+        // Verificar si el email coincide con el patrón
+        return Regex.IsMatch(email, pattern);
     }
 }

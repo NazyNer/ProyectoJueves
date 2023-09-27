@@ -84,31 +84,42 @@ function ClearModal() {
   $("#CarreraID").val(0);
   $("#Id").val("");
   $("#lbl-error").text("");
+  $("#Address").val("");
+  $("#Dni").val("");
+  $("#Email").val("");
 }
 
 function SaveStudent() {
-  $("#lbl-error").text("");
+  let error = $("#lbl-error");
+  error.text("");
   let FullName = $("#FullName").val();
   let Id = $("#Id").val();
   let Birthdate = $("#Birthdate").val();
   let CarreraID = $("#CarreraID").val();
-  $.ajax({
-    url: '../../Alumno/GuardarAlumno',
-    type: 'POST',
-    dataType: 'json',
-    data: {Id: Id, FullName: FullName, Birthdate: Birthdate, CarreraID: CarreraID},
-    async: false,
-    success: function (resultado) {
-      console.log(resultado);
-      if (resultado.NonError) {
-        $("#staticBackdrop").modal("hide");
-        SearchStudents();
-      }
-      else {
-        $("#lbl-error").text(resultado.MsjError);
-      }
-    },
-  });
+  let Address = $("#Address").val();
+  let Dni = $("#Dni").val();
+  let Email = $("#Email").val();
+  if (Dni.length >= 7 && Dni.length <= 8){
+    $.ajax({
+      url: '../../Alumno/GuardarAlumno',
+      type: 'POST',
+      dataType: 'json',
+      data: {Id: Id, FullName: FullName, Dni: Dni, Email: Email, Birthdate: Birthdate, CarreraID: CarreraID, Address: Address},
+      async: false,
+      success: function (resultado) {
+        console.log(resultado);
+        if (resultado.NonError) {
+          $("#staticBackdrop").modal("hide");
+          SearchStudents();
+        }
+        else {
+          error.text(resultado.Mensaje);
+        }
+      },
+    });
+  }else{
+    error.text("El DNI debe de tener al menos 7 numeros y no mas de 8");
+  }
 }
 
 function EditStudent(id) {
@@ -126,6 +137,9 @@ function EditStudent(id) {
           $("#Birthdate").val(fechaFormateada);
           $("#CarreraID").val(students[0].carreraId);
           $("#Id").val(students[0].id);
+          $("#Address").val(students[0].address);
+          $("#Dni").val(students[0].dni);
+          $("#Email").val(students[0].email);
           $("#staticBackdrop").modal("show");
         }
     }});
@@ -141,7 +155,7 @@ function DeleteStudent(id) {
       if (resultado.NonError) {
         SearchStudents()
       }else{
-        alert(resultado.MsjError);
+        alert(resultado.Mensaje);
       }
     }});
 }
@@ -159,7 +173,7 @@ function ActiOrDesacStudent(studentId){
         if (resultado.NonError) {
           SearchStudents();
         }else{
-          alert(resultado.MsjError);
+          alert(resultado.Mensaje);
         }
       }
     });

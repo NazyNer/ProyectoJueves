@@ -98,7 +98,7 @@ public class ProfesorController : Controller {
         return Json(Error);
     }
 
-     public static bool IsValidEmail(string email)
+    public static bool IsValidEmail(string email)
     {
         // Expresión regular para validar emails
         string pattern = @"^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$";
