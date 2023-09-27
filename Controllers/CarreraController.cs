@@ -25,7 +25,7 @@ public class CarreraController : Controller {
         var carrers = _context.Carreras?.OrderBy(c => c.Name).ToList();
         if (Id > 0)
         {
-            var carrer = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault() ;
+            var carrer = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault();
             return Json(carrer);
         }
         return Json(carrers);
