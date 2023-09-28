@@ -111,9 +111,9 @@ public class ProfesorController : Controller {
         Resultado.asignaturasRelacionadas = asignaturasEnRelacion;
         return Json(Resultado);
     }
-    public JsonResult GuardarAsignaturas(int[] Asignaturas){
+    // public JsonResult GuardarAsignaturas(int[] Asignaturas){
 
-    }
+    // }
 
     public static bool IsValidEmail(string email)
     {
