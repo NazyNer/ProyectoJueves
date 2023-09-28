@@ -1,10 +1,11 @@
 @{
-    ViewData["Title"] = "Profesor";
+  ViewData["Title"] = "Profesor";
 }
 
 
 <!-- Modal -->
-<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -26,6 +27,9 @@
             <input id="Email" name="Email" type="text">
             <label for="">Direccion</label>
             <input id="Address" name="Address" type="text">
+            @* <input type="checkbox" name="transporte" value="1">Coche
+            <input type="checkbox" name="transporte" value="2" checked>Avión
+            <input type="checkbox" name="transporte" value="3">Tren *@
             <h1 id="lbl-error" style="color: red;"></h1>
           </form>
         </div>
@@ -41,22 +45,35 @@
 
 <h1>Profesores...</h1>
 <div>
-    <table class="table table-dark table-striped table-hover">
-  <thead>
-    <tr>
-      <th scope="col">DNI</th>
-      <th scope="col">Nombre completo</th>
-      <th scope="col">Fecha de nacimiento</th>
-      <th scope="col"><button class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Crear Nuevo</button></th>
-      <th scope="col">Email</th>
-      <th scope="col">Direccion</th>
-    </tr>
-  </thead>
-  <tbody id="tbody-Profesor">
-  </tbody>
-</table>
+  <table class="table table-dark table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col">DNI</th>
+        <th scope="col">Nombre completo</th>
+        <th scope="col">Fecha de nacimiento</th>
+        <th scope="col"><button class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary"
+            data-bs-toggle="modal" data-bs-target="#staticBackdrop">Crear Nuevo</button></th>
+        <th scope="col">Email</th>
+        <th scope="col">Direccion</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-Profesor">
+    </tbody>
+  </table>
+</div>
+<div id="AsignaturasTable">
+  <table class="table table-dark table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Asignaturas <input type="tel" id="ProfesorAsignatura"/></th>
+        <th scope="col">(Las seleccionadas ya estan relacionadas con el profesor) <button class="btn btn-primary" onclick="GuardarAsignaturas()">Guardar</button></th>
+      </tr>
+    </thead>
+    <tbody id="tbody-AsignaturasProfesor">
+    </tbody>
+  </table>
 </div>
 
 @section Scripts {
-    <script src="~/js/Profesor.js"></script>
+  <script src="~/js/Profesor.js"></script>
 }

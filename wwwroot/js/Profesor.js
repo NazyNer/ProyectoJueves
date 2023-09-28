@@ -36,6 +36,8 @@ function FormatearFecha(fecha) {
 
 
 function SearchProfesores() {
+    let tablaAsignaturas = $("#AsignaturasTable");
+    tablaAsignaturas.addClass("displayHidden");
     let tablaProfesores = $("#tbody-Profesor");
     tablaProfesores.empty();
     $.ajax({
@@ -55,6 +57,7 @@ function SearchProfesores() {
                   <td>
                    <button title="Editar Profesor" onClick="EditStudent(${profesor.profesorId})">✏</button>
                    <button title="Eliminar Profesor" onClick="DeleteProfesor(${profesor.profesorId})">🗑</button>
+                   <button title="Ver Asignaturas" onClick="Asignaturas(${profesor.profesorId})">📚</button>
                   </td>
                   <td>${profesor.email}</td>
                   <td>${profesor.address}</td>
@@ -65,11 +68,61 @@ function SearchProfesores() {
     })
 }
 
+function Asignaturas(ProfesorId) {
+    let tabla = $("#AsignaturasTable");
+    let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
+    let profesor = $("#ProfesorAsignatura");
+    tablaAsignaturas.empty();
+    $.ajax({
+        url: '../../Profesor/Asignaturas',
+        data: { Id: ProfesorId },
+        type: 'POST',
+        dataType: 'json',
+        success: function (devolucion) {
+            console.log(devolucion);
+            tabla.removeClass("displayHidden");
+            if (devolucion.asignaturas.length > 0) {
+                profesor.val(ProfesorId);
+                $.each(devolucion.asignaturas, function (index, asignatura){
+                    console.log(asignatura);
+                    tablaAsignaturas.append(`
+                        <tr>
+                            <td>${asignatura.nombre}</td>
+                            <td><input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></td>
+                        </tr>
+                    `)
+                })
+            }else{
+                tablaAsignaturas.append(`
+                <td><p>No hay asignaturas creadas</p></td>
+                <td><p>Por favor ve a crear nuevas y volver a intentar</p></td>
+                `)
+            }
+        }
+    });
+}
+
+function GuardarAsignaturas() {
+    let valoresCheck = [];
+    $("input[type=checkbox]:checked").each(function(){
+        valoresCheck.push(this.value);
+    });
+    $.ajax({
+        url: '../../Profesor/GuardarAsignaturas',
+        data: { Asignaturas: valoresCheck },
+        type: 'POST',
+        dataType: 'json',
+        success: function (){
+
+        }
+    });
+}
+
 function EditStudent(id) {
     $.ajax({
         url: '../../Profesor/SearchProfesores',
         data: { Id: id },
-        type: 'GET',
+        type: 'POST',
         dataType: 'json',
         success: function (students) {
             var fechaFormateada = FormatearFecha(students[0].birthdate);

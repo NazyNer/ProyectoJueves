@@ -83,7 +83,7 @@ public class ProfesorController : Controller {
     }
 
     public JsonResult DeleteProfesor (int Id){
-         dynamic Error = new ExpandoObject();
+        dynamic Error = new ExpandoObject();
         Error.NonError = false;
         Error.Mensaje = "No se selecciono ningun profesor";
         if(Id > 0){
@@ -96,6 +96,23 @@ public class ProfesorController : Controller {
             }
         }
         return Json(Error);
+    }
+
+    public JsonResult Asignaturas(int id){
+        dynamic Resultado = new ExpandoObject();
+        var Asignaturas = _context.Asignaturas.ToList();
+        Resultado.asignaturas = Asignaturas;
+        var AsignaturasRelacionadas = _context.ProfesorAsignatura.Where(pa => pa.ProfesorID == id).ToList();
+        dynamic asignaturasEnRelacion = new ExpandoObject();
+        foreach(var asignatura in AsignaturasRelacionadas){
+            var nombreAsignatura = Asignaturas.Where(a => a.AsignaturaId == asignatura.AsignaturaID).FirstOrDefault();
+            ((IDictionary<int, string>)asignaturasEnRelacion)[asignatura.AsignaturaID] = nombreAsignatura.Nombre;
+        }
+        Resultado.asignaturasRelacionadas = asignaturasEnRelacion;
+        return Json(Resultado);
+    }
+    public JsonResult GuardarAsignaturas(int[] Asignaturas){
+
     }
 
     public static bool IsValidEmail(string email)
