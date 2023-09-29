@@ -103,13 +103,15 @@ function Asignaturas(ProfesorId) {
 }
 
 function GuardarAsignaturas() {
-    let valoresCheck = [];
+    let valoresCheck = {};
     $("input[type=checkbox]:checked").each(function(){
         valoresCheck.push(this.value);
     });
+    let IdProfesor = $("#ProfesorAsignatura").val();
+    valoresCheck.push(IdProfesor)
     $.ajax({
         url: '../../Profesor/GuardarAsignaturas',
-        data: { Asignaturas: valoresCheck },
+        data: { AsignaturasJs: valoresCheck},
         type: 'POST',
         dataType: 'json',
         success: function (){
