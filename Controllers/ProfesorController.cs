@@ -118,7 +118,7 @@ public class ProfesorController : Controller
         foreach (var asignatura in AsignaturasRelacionadas)
         {
             var nombreAsignatura = Asignaturas.Where(a => a.AsignaturaId == asignatura.AsignaturaID).FirstOrDefault();
-            ((IDictionary<int, string>)asignaturasEnRelacion)[asignatura.AsignaturaID] = nombreAsignatura.Nombre;
+            ((IDictionary<string, object>)asignaturasEnRelacion)[asignatura.AsignaturaID.ToString()] = nombreAsignatura;
         }
         Resultado.asignaturasRelacionadas = asignaturasEnRelacion;
         return Json(Resultado);
@@ -135,9 +135,7 @@ public class ProfesorController : Controller
             try
             {
                 // relaciones actuales del profesor
-                var relacionesActuales = _context.ProfesorAsignatura
-                    .Where(pa => pa.ProfesorID == ProfesorId)
-                    .ToList();
+                var relacionesActuales = _context.ProfesorAsignatura.Where(pa => pa.ProfesorID == ProfesorId).ToList();
 
                 // relaciones actuales
                 foreach (var relacionActual in relacionesActuales)
@@ -177,9 +175,11 @@ public class ProfesorController : Controller
                     {
                         Error.mensaje = "No se encontró la asignatura.";
                         Error.NonError = false;
+                        break;
                     }
                 }
-
+                Error.NonError = true;
+                Error.mensaje = "";
                 _context.SaveChanges();
                 transaction.Commit();
             }

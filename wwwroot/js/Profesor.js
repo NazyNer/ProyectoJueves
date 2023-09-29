@@ -79,18 +79,25 @@ function Asignaturas(ProfesorId) {
         type: 'POST',
         dataType: 'json',
         success: function (devolucion) {
-            console.log(devolucion);
             tabla.removeClass("displayHidden");
             if (devolucion.asignaturas.length > 0) {
                 profesor.val(ProfesorId);
                 $.each(devolucion.asignaturas, function (index, asignatura){
-                    console.log(asignatura);
-                    tablaAsignaturas.append(`
+                    if (devolucion.asignaturasRelacionadas[`${asignatura.asignaturaId}`] != undefined) {
+                        tablaAsignaturas.append(`
                         <tr>
                             <td>${asignatura.nombre}</td>
-                            <td><input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></td>
+                            <td><input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}" checked></td>
                         </tr>
                     `)
+                    }else{
+                        tablaAsignaturas.append(`
+                            <tr>
+                                <td>${asignatura.nombre}</td>
+                                <td><input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></td>
+                            </tr>
+                        `)
+                    }
                 })
             }else{
                 tablaAsignaturas.append(`
@@ -103,21 +110,36 @@ function Asignaturas(ProfesorId) {
 }
 
 function GuardarAsignaturas() {
-    let valoresCheck = {};
+    let tabla = $("#AsignaturasTable");
+    let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
+    let valoresCheck = [];
     $("input[type=checkbox]:checked").each(function(){
         valoresCheck.push(this.value);
     });
     let IdProfesor = $("#ProfesorAsignatura").val();
-    valoresCheck.push(IdProfesor)
     $.ajax({
         url: '../../Profesor/GuardarAsignaturas',
-        data: { AsignaturasJs: valoresCheck},
+        data: { AsignaturasJs: valoresCheck , ProfesorId: IdProfesor},
         type: 'POST',
         dataType: 'json',
-        success: function (){
-
+        success: function (resultado){
+            console.log(resultado);
+            if (resultado.NonError) {
+                tabla.addClass("displayHidden");
+                tablaAsignaturas.empty();
+            }else{
+                tablaAsignaturas.empty();
+                tabla.addClass("displayHidden");
+                alert(resultado.mensaje);
+            }
         }
     });
+}
+function CerrarTablaAsignatura() {
+    let tabla = $("#AsignaturasTable");
+    let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
+    tabla.addClass("displayHidden");
+    tablaAsignaturas.empty();
 }
 
 function EditStudent(id) {
