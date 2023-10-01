@@ -85,16 +85,16 @@ function Asignaturas(ProfesorId) {
                 $.each(devolucion.asignaturas, function (index, asignatura){
                     if (devolucion.asignaturasRelacionadas[`${asignatura.asignaturaId}`] != undefined) {
                         tablaAsignaturas.append(`
-                        <tr>
+                        <tr class="table-success">
                             <td>${asignatura.nombre}</td>
-                            <td><input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}" checked></td>
+                            <td><div class="toggle-rect-color"><input type="checkbox"id="${asignatura.asignaturaId}" name="asignaturas" value="${asignatura.asignaturaId}" checked><label for="${asignatura.asignaturaId}"></label></div></td>
                         </tr>
                     `)
                     }else{
                         tablaAsignaturas.append(`
-                            <tr>
+                            <tr class"table-warning">
                                 <td>${asignatura.nombre}</td>
-                                <td><input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></td>
+                                <td><div class="toggle-rect-color"><input value="${asignatura.asignaturaId}" type="checkbox" id="${asignatura.asignaturaId}" name="asignaturas"><label for="${asignatura.asignaturaId}"></label></div></td>
                             </tr>
                         `)
                     }
@@ -108,7 +108,7 @@ function Asignaturas(ProfesorId) {
         }
     });
 }
-
+{/* <input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></input>    */}
 function GuardarAsignaturas() {
     let tabla = $("#AsignaturasTable");
     let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
