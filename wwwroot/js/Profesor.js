@@ -82,15 +82,15 @@ function Asignaturas(ProfesorId) {
             tabla.removeClass("displayHidden");
             if (devolucion.asignaturas.length > 0) {
                 profesor.val(ProfesorId);
-                $.each(devolucion.asignaturas, function (index, asignatura){
+                $.each(devolucion.asignaturas, function (index, asignatura) {
                     if (devolucion.asignaturasRelacionadas[`${asignatura.asignaturaId}`] != undefined) {
                         tablaAsignaturas.append(`
                         <tr class="table-success">
-                            <td>${asignatura.nombre}</td>
+                            <td>${asignatura.nombre} <button onclick="Agregartarea(${asignatura.asignaturaId}, ${ProfesorId})">📋Crear tareas</button></td>
                             <td><div class="toggle-rect-color"><input type="checkbox"id="${asignatura.asignaturaId}" name="asignaturas" value="${asignatura.asignaturaId}" checked><label for="${asignatura.asignaturaId}"></label></div></td>
                         </tr>
                     `)
-                    }else{
+                    } else {
                         tablaAsignaturas.append(`
                             <tr class"table-warning">
                                 <td>${asignatura.nombre}</td>
@@ -99,7 +99,7 @@ function Asignaturas(ProfesorId) {
                         `)
                     }
                 })
-            }else{
+            } else {
                 tablaAsignaturas.append(`
                 <td><p>No hay asignaturas creadas</p></td>
                 <td><p>Por favor ve a crear nuevas y volver a intentar</p></td>
@@ -108,26 +108,26 @@ function Asignaturas(ProfesorId) {
         }
     });
 }
-{/* <input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></input>    */}
+{/* <input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></input>    */ }
 function GuardarAsignaturas() {
     let tabla = $("#AsignaturasTable");
     let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
     let valoresCheck = [];
-    $("input[type=checkbox]:checked").each(function(){
+    $("input[type=checkbox]:checked").each(function () {
         valoresCheck.push(this.value);
     });
     let IdProfesor = $("#ProfesorAsignatura").val();
     $.ajax({
         url: '../../Profesor/GuardarAsignaturas',
-        data: { AsignaturasJs: valoresCheck , ProfesorId: IdProfesor},
+        data: { AsignaturasJs: valoresCheck, ProfesorId: IdProfesor },
         type: 'POST',
         dataType: 'json',
-        success: function (resultado){
+        success: function (resultado) {
             console.log(resultado);
             if (resultado.NonError) {
                 tabla.addClass("displayHidden");
                 tablaAsignaturas.empty();
-            }else{
+            } else {
                 tablaAsignaturas.empty();
                 tabla.addClass("displayHidden");
                 alert(resultado.mensaje);
@@ -175,6 +175,71 @@ function ClearModal() {
     $("#lbl-error").text("");
 }
 
+function Agregartarea(asignatura, Profesor) {
+    var Seccion = $("#TablaCrearTarea");
+    Seccion.empty();
+    console.log(asignatura, Profesor);
+    Seccion.append(`
+    <h1>Crear Tarea</h1>
+    
+    <form id="crearTareaForm" onsubmit="return false">
+    <div class="mb-3">
+        <label for="titulo" class="form-label">Título:</label>
+        <input type="text" class="form-control" id="titulo" name="Titulo" required>
+    </div>
+    <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción:</label>
+        <textarea id="descripcion" class="form-control" name="Descripcion" rows="4" cols="50" required></textarea>
+    <div class="mb-3">
+        <label for="fechaCarga" class="form-label">Fecha de Carga:</label>
+        <input type="date" id="Birthdate" class="form-control" name="FechaDeCarga" required>
+    </div>
+    <div class="mb-3">
+        <label for="fechaVencimiento" class="form-label">Fecha de Vencimiento:</label>
+        <input type="date" id="Birthdate" class="form-control" name="FechaDeVencimiento" required>
+    </div>
+    <input type="number" id="profesorID" class="form-control" name="ProfesorID" value="${Profesor}" disabled>
+    <input type="number" id="AsignaturaID" class="form-control" name="AsignaturaID" value="${asignatura}" disabled>
+    </form>
+    <button class="btn btn-success"onclick="GuardarTarea()">Guardar Tarea</button>
+`);
+}
+
+function GuardarTarea() {
+    var titulo = $("#titulo").val();
+    var descripcion = $("#descripcion").val();
+    var fechaCarga = $("input[name='FechaDeCarga']").val();
+    var fechaVencimiento = $("input[name='FechaDeVencimiento']").val();
+    var profesorID = $("#profesorID").val();
+    var AsignaturaID = $("#AsignaturaID").val();
+    console.log(
+        titulo,
+        descripcion,
+        fechaCarga,
+        fechaVencimiento,
+        profesorID,
+        AsignaturaID);
+    $.ajax({
+        url: "../../Tarea/GuardarTarea",
+        data: {
+            Titulo: titulo,
+            Descripcion: descripcion,
+            FechaDeCarga: fechaCarga,
+            FechaDeVencimiento: fechaVencimiento,
+            ProfesorID: profesorID,
+            AsignaturaID: AsignaturaID
+        },
+        type: "POST",
+        contentType: "json",
+        success: function (respuesta) {
+            console.log(respuesta);
+        },
+        error: function (error) {
+            console.error("Error al crear la tarea", error);
+        }
+    });
+};
+
 function SaveProfesor() {
     $("#lbl-error").text("");
     let FullName = $("#FullName").val();
@@ -184,27 +249,27 @@ function SaveProfesor() {
     let Dni = $("#Dni").val();
     let Email = $("#Email").val();
     if (Dni.length >= 7 && Dni.length <= 8) {
-            // La entrada es válida
-            console.log("llegue");
-            $.ajax({
-                url: '../../Profesor/SaveProfesor',
-                type: 'POST',
-                dataType: 'json',
-                data: { Id: Id, FullName: FullName, Birthdate: Birthdate, Address: Address, Dni: Dni, Email: Email },
-                async: false,
-                success: function (resultado) {
+        // La entrada es válida
+        console.log("llegue");
+        $.ajax({
+            url: '../../Profesor/SaveProfesor',
+            type: 'POST',
+            dataType: 'json',
+            data: { Id: Id, FullName: FullName, Birthdate: Birthdate, Address: Address, Dni: Dni, Email: Email },
+            async: false,
+            success: function (resultado) {
+                console.log(resultado);
+                if (resultado.NonError) {
+                    $("#staticBackdrop").modal("hide");
+                    SearchProfesores();
+                }
+                else {
                     console.log(resultado);
-                    if (resultado.NonError) {
-                        $("#staticBackdrop").modal("hide");
-                        SearchProfesores();
-                    }
-                    else {
-                        console.log(resultado);
-                        $("#lbl-error").text(resultado.MsjError);
-                    }
-                },
-            });
-    }else{
+                    $("#lbl-error").text(resultado.MsjError);
+                }
+            },
+        });
+    } else {
         $("#lbl-error").text("El DNI debe tener entre 7 y 8 caracteres.");
     }
 }
