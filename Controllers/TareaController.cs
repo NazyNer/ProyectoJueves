@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoJueves.Data;
+using ProyectoJueves.Migrations;
 using ProyectoJueves.Models;
 
 
@@ -21,24 +22,45 @@ public class TareaController : Controller
   }
   public IActionResult Index()
   {
+    var asignaturas = _context.Asignaturas?.ToList();
+    ViewBag.AsignaturaId = new SelectList(asignaturas?.OrderBy(p => p.Nombre), "AsignaturaId", "Nombre");
     return View();
   }
+  public JsonResult ObtenerDatos(int id, int asignaturaId){
+    dynamic Error = new ExpandoObject();
+    Error.nonError = false;
+    Error.mensaje = "No hay tareas en esta asignatura";
+    var tareas = _context.Tareas?.Where(t => t.AsignaturaID == asignaturaId).OrderByDescending(t => t.FechaDeVencimiento).ToList();
+    if (tareas.Count != 0)
+    {
+      if (id != 0)
+      {
+        tareas = tareas.Where(t => t.TareaId == id).ToList();
+      }
+      Error.nonError = true;
+      Error.mensaje = tareas;
+    }
+    return Json(Error);
+  }
 
-// No entiendo porque no anda... si me das una solucion profe podre seguir (se lo agradeceria mucho)...:(
-  public JsonResult GuardarTarea(string Titulo,string Descripcion,DateTime FechaDeCarga, DateTime FechaDeVencimiento,int ProfesorID,int AsignaturaID)
+  public JsonResult GuardarTarea(string titulo,string descripcion,DateTime FechaCarga, DateTime FechaVencimiento,int profesorID,int asignaturaID)
   {
     dynamic Error = new ExpandoObject();
     Error.nonError = false;
     Error.mensaje = "hubo un error al crear la tarea";
-    var Datos = new Tarea{
-      FechaDeCarga = FechaDeCarga,
-      FechaDeVencimiento = FechaDeVencimiento,
-      Titulo = Titulo,
-      Descripcion = Descripcion,
-      AsignaturaID = AsignaturaID,
-      ProfesorID = ProfesorID
+    var Tarea = new Tarea{
+      FechaDeCarga = FechaCarga,
+      FechaDeVencimiento = FechaVencimiento,
+      Titulo = titulo,
+      Descripcion = descripcion,
+      AsignaturaID = asignaturaID,
+      ProfesorID = profesorID
     };
-    Error.Dato = Datos;
+    _context.Tareas.Add(Tarea);
+    _context.SaveChanges();
+    Error.nonError = true;
+    Error.mensaje = "";
     return Json(Error);
   }
+
 }

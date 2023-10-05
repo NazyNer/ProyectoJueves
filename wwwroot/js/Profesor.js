@@ -46,6 +46,7 @@ function SearchProfesores() {
         type: 'GET',
         dataType: 'json',
         success: function (profesores) {
+            console.log(profesores);
             tablaProfesores.empty();
             $.each(profesores, function (index, profesor) {
                 var fechaFormateada = FormatearFecha(profesor.birthdate);
@@ -222,17 +223,22 @@ function GuardarTarea() {
     $.ajax({
         url: "../../Tarea/GuardarTarea",
         data: {
-            Titulo: titulo,
-            Descripcion: descripcion,
-            FechaDeCarga: fechaCarga,
-            FechaDeVencimiento: fechaVencimiento,
-            ProfesorID: profesorID,
-            AsignaturaID: AsignaturaID
+            titulo: titulo,
+            descripcion: descripcion,
+        FechaCarga: fechaCarga,
+        FechaVencimiento: fechaVencimiento,
+        profesorID: profesorID,
+        asignaturaID: AsignaturaID
         },
         type: "POST",
-        contentType: "json",
+        dataType: 'json',
         success: function (respuesta) {
             console.log(respuesta);
+            if(respuesta.nonError){
+                window.location.reload();
+            }else{
+                alert(respuesta.mensaje);
+            }
         },
         error: function (error) {
             console.error("Error al crear la tarea", error);
