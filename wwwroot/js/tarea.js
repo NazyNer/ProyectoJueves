@@ -14,15 +14,21 @@ $('#AsignaturaId').change(function () {
   Tareas(selectedValue);
 });
 
-function Tareas(id, asignatura) {
+function Tarea(id, asignatura) {
   let descripcionTarea = $("#DescripcionTarea");
+  let tituloTarea = $("#Titulotarea #" + id);
+  $("#Titulotarea a.active").removeClass("active");
   $.ajax({
     url: '/Tarea/ObtenerDatos',
     type: 'POST',
-    data: { id: id,asignaturaId: asignatura },
+    data: { id: id , asignaturaId: asignatura },
     dataType: 'json',
     success: function (result) {
-      let tarea = result.mensaje[0];
+      let tarea = result.mensaje;
+      tarea = tarea[0];
+      let fecha = FormatearFecha(tarea.fechaDeVencimiento)
+      tituloTarea.addClass("active")
+      descripcionTarea.empty();
       descripcionTarea.append(`
               <div class="card">
                 <div class="card-header">
@@ -56,13 +62,8 @@ function Tareas(Asignatura) {
         let count = 0;
         $.each(result.mensaje, function (index, tarea) {
           let fecha = FormatearFecha(tarea.fechaDeVencimiento)
-          console.log(fecha);
           let hoy = new Date();
           hoy = "0" + hoy.getDate() + "/" + (hoy.getMonth()+1) + "/" + hoy.getFullYear();
-          console.log(tarea);
-          console.log(fecha > hoy);
-          console.log(hoy);
-          console.log(fecha);
           if (fecha < hoy) {
             tituloTarea.append(`
             <a class="list-group-item list-group-item-action disabled" aria-current="true">
@@ -74,10 +75,9 @@ function Tareas(Asignatura) {
             </a>
             `)
           }else{
-            console.log(fecha);
             if (count == 0) {
               tituloTarea.append(`
-              <a class="list-group-item list-group-item-action active" active aria-current="true">
+              <a onclick="Tarea(${tarea.tareaId},${Asignatura})" id="${tarea.tareaId}" class="list-group-item list-group-item-action active" active aria-current="true">
                 <div class="d-flex w-100 justify-content-between">
                   <h5 class="mb-1">${tarea.titulo}</h5>
                   <small class="text-success">Activo</small>
@@ -101,7 +101,7 @@ function Tareas(Asignatura) {
               `);
             }else{
               tituloTarea.append(`
-              <a class="list-group-item list-group-item-action" active aria-current="true">
+              <a onclick="Tarea(${tarea.tareaId},${Asignatura})" id="${tarea.tareaId}" class="list-group-item list-group-item-action" active aria-current="true">
                 <div class="d-flex w-100 justify-content-between">
                   <h5 class="mb-1">${tarea.titulo}</h5>
                   <small class="text-success">Activo</small>
@@ -114,7 +114,7 @@ function Tareas(Asignatura) {
           count++;
         });
       }else{
-        // tituloTarea.empty();
+        tituloTarea.empty();
         descripcionTarea.empty();
         tituloTarea.append(`
         <a href="#" class="list-group-item list-group-item-action disabled" aria-current="true">
