@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoJueves.Data;
 using ProyectoJueves.Models;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace ProyectoJueves.Controllers;
@@ -15,11 +16,13 @@ public class ProfesorController : Controller
 
     private readonly ILogger<ProfesorController> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public ProfesorController(ApplicationDbContext context, ILogger<ProfesorController> logger)
+    public ProfesorController(UserManager<IdentityUser> userManager,ApplicationDbContext context, ILogger<ProfesorController> logger)
     {
         _context = context;
         _logger = logger;
+        _userManager = userManager;
     }
     public IActionResult Index()
     {
@@ -37,7 +40,7 @@ public class ProfesorController : Controller
         return Json(profesor);
     }
 
-    public JsonResult SaveProfesor(int Id, string FullName, DateTime Birthdate, string Address, int Dni, string Email)
+    public async Task<JsonResult> SaveProfesor(int Id, string FullName, DateTime Birthdate, string Address, int Dni, string Email)
     {
         dynamic Error = new ExpandoObject();
         Error.NonError = false;
@@ -53,18 +56,32 @@ public class ProfesorController : Controller
                     var ProfesorEmail = _context.Profesores.Where(p => p.Dni == Dni).FirstOrDefault();
                     if (ProfesorEmail == null)
                     {
-                        Error.NonError = true;
-                        Error.Mensaje = "";
-                        var profesor = new Profesor
-                        {
-                            Dni = Dni,
-                            FullName = FullName,
-                            Birthdate = Birthdate,
-                            Address = Address,
-                            Email = Email
-                        };
-                        _context.Profesores.Add(profesor);
-                        _context.SaveChanges();
+                        Error.Mensaje = "Ya existe un profesor con ese Email";
+                        var usuarioExistente = await _userManager.FindByEmailAsync(Email);
+                        if(usuarioExistente == null){
+                            var profesor = new Profesor
+                            {
+                                Dni = Dni,
+                                FullName = FullName,
+                                Birthdate = Birthdate,
+                                Address = Address,
+                                Email = Email
+                            };
+                            _context.Profesores.Add(profesor);
+                            _context.SaveChanges();
+                            var user = new IdentityUser { UserName = FullName, Email = Email};
+                            var contraseña = Dni.ToString();
+                            var result = await _userManager.CreateAsync(user, contraseña);
+                            if(result.Succeeded){
+                                var Rol = _context.Roles.Where(r => r.Name == "Profesor").SingleOrDefault();
+                                var usuarioAsignar = await _userManager.FindByEmailAsync(Email);
+                                var Result = await _userManager.AddToRoleAsync(usuarioAsignar, Rol.Name);
+                                if(Result.Succeeded){
+                                    Error.NonError = true;
+                                    Error.Mensaje = "";
+                                }
+                            }
+                        }
                     }
                 }
                 else
@@ -76,7 +93,6 @@ public class ProfesorController : Controller
                         Error.NonError = true;
                         Error.Mensaje = "";
                         var profesor = _context.Profesores.Where(p => p.ProfesorId == Id).FirstOrDefault();
-                        profesor.Email = Email;
                         profesor.Dni = Dni;
                         profesor.Address = Address;
                         profesor.Birthdate = Birthdate;

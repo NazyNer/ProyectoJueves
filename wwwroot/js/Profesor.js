@@ -46,7 +46,7 @@ function SearchProfesores() {
         type: 'GET',
         dataType: 'json',
         success: function (profesores) {
-            console.log(profesores);
+
             tablaProfesores.empty();
             $.each(profesores, function (index, profesor) {
                 var fechaFormateada = FormatearFecha(profesor.birthdate);
@@ -124,7 +124,7 @@ function GuardarAsignaturas() {
         type: 'POST',
         dataType: 'json',
         success: function (resultado) {
-            console.log(resultado);
+
             if (resultado.NonError) {
                 tabla.addClass("displayHidden");
                 tablaAsignaturas.empty();
@@ -151,7 +151,6 @@ function EditStudent(id) {
         dataType: 'json',
         success: function (students) {
             var fechaFormateada = FormatearFecha(students[0].birthdate);
-            console.log(students);
             if (students[0].profesorId == id) {
                 ClearModal();
                 $("#FullName").val(students[0].fullName);
@@ -179,7 +178,7 @@ function ClearModal() {
 function Agregartarea(asignatura, Profesor) {
     var Seccion = $("#TablaCrearTarea");
     Seccion.empty();
-    console.log(asignatura, Profesor);
+
     Seccion.append(`
     <h1>Crear Tarea</h1>
     
@@ -213,13 +212,7 @@ function GuardarTarea() {
     var fechaVencimiento = $("input[name='FechaDeVencimiento']").val();
     var profesorID = $("#profesorID").val();
     var AsignaturaID = $("#AsignaturaID").val();
-    console.log(
-        titulo,
-        descripcion,
-        fechaCarga,
-        fechaVencimiento,
-        profesorID,
-        AsignaturaID);
+
     $.ajax({
         url: "../../Tarea/GuardarTarea",
         data: {
@@ -233,7 +226,7 @@ function GuardarTarea() {
         type: "POST",
         dataType: 'json',
         success: function (respuesta) {
-            console.log(respuesta);
+
             if(respuesta.nonError){
                 window.location.reload();
             }else{
@@ -256,7 +249,7 @@ function SaveProfesor() {
     let Email = $("#Email").val();
     if (Dni.length >= 7 && Dni.length <= 8) {
         // La entrada es válida
-        console.log("llegue");
+
         $.ajax({
             url: '../../Profesor/SaveProfesor',
             type: 'POST',
@@ -264,13 +257,13 @@ function SaveProfesor() {
             data: { Id: Id, FullName: FullName, Birthdate: Birthdate, Address: Address, Dni: Dni, Email: Email },
             async: false,
             success: function (resultado) {
-                console.log(resultado);
+
                 if (resultado.NonError) {
                     $("#staticBackdrop").modal("hide");
                     SearchProfesores();
                 }
                 else {
-                    console.log(resultado);
+
                     $("#lbl-error").text(resultado.MsjError);
                 }
             },

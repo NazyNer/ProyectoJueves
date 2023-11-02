@@ -13,5 +13,6 @@ public class Alumno {
     public int CarreraId { get; set; }
     public string? CarreraName { get; set;}
     public bool IsActive { get; set; }
+    public string? UsuarioID { get; set; }
     public virtual Carrera? Carrera { get; set; }
 }
