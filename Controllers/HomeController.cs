@@ -63,8 +63,28 @@ public class HomeController : Controller
                     var usuarioCreado = await _userManager.FindByEmailAsync(profesor.Email);
                     var RolResult = await _userManager.AddToRoleAsync(usuarioCreado, RolProfe.Name);
                 }
+                profesor.UsuarioID = ProfesorCreado.Id;
+                _context.SaveChanges();
             }
         }
+        var estudiantes = _context.Alumnos.ToList();
+        var RolEstudiante  = _context.Roles.Where(r => r.Name == "Estudiante").SingleOrDefault();
+        foreach (var estudiante in estudiantes)
+        {
+            var EstudianteCreado = await _userManager.FindByEmailAsync(estudiante.Email);
+            if(EstudianteCreado == null){
+                var user = new IdentityUser { UserName = estudiante.FullName, Email = estudiante.Email};
+                var contraseña = estudiante.DNI.ToString();
+                var EstudianteCrear = await _userManager.CreateAsync(user, contraseña);
+                if(EstudianteCrear.Succeeded){
+                    var usuarioCreado = await _userManager.FindByEmailAsync(estudiante.Email);
+                    var RolResult = await _userManager.AddToRoleAsync(usuarioCreado, RolEstudiante.Name);
+                }
+                estudiante.UsuarioID = EstudianteCreado.Id;
+                _context.SaveChanges();
+            }
+        }
+        
         
         return View();
     }

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoJueves.Data;
@@ -16,11 +17,12 @@ public class AlumnoController : Controller {
 
     private readonly ILogger<AlumnoController> _logger;
     private readonly ApplicationDbContext _context;
-
-    public AlumnoController(ApplicationDbContext context, ILogger<AlumnoController> logger)
+    private readonly UserManager<IdentityUser> _userManager;
+    public AlumnoController(UserManager<IdentityUser> userManager,ApplicationDbContext context, ILogger<AlumnoController> logger)
     {
         _context = context;
         _logger = logger;
+        _userManager = userManager;
     }
     public IActionResult Index()
     {
@@ -39,7 +41,7 @@ public class AlumnoController : Controller {
         return Json(alumnos);
     }
 
-    public JsonResult GuardarAlumno(int Id, string FullName, int Dni, string Email, string Address, DateTime Birthdate, int CarreraId)
+    public async Task<JsonResult> GuardarAlumno(int Id, string FullName, int Dni, string Email, string Address, DateTime Birthdate, int CarreraId)
     {
         dynamic Error = new ExpandoObject();
         Error.NonError = false;
@@ -74,8 +76,19 @@ public class AlumnoController : Controller {
                             };
                             _context.Alumnos.Add(Alumno);
                             _context.SaveChanges();
-                            Error.NonError = true;
-                            Error.Mensaje = "Datos guardados correctamente";
+
+                            var user = new IdentityUser { UserName = FullName, Email = Email};
+                            var contraseña = Dni.ToString();
+                            var result = await _userManager.CreateAsync(user, contraseña);
+                            if(result.Succeeded){
+                                var Rol = _context.Roles.Where(r => r.Name == "Estudiante").SingleOrDefault();
+                                var usuarioAsignar = await _userManager.FindByEmailAsync(Email);
+                                var Result = await _userManager.AddToRoleAsync(usuarioAsignar, Rol.Name);
+                                if(Result.Succeeded){
+                                    Error.NonError = true;
+                                    Error.Mensaje = "Datos guardados correctamente";
+                                }
+                            }
                         }
                     }else{
                         Error.Mensaje = "Ya existe un alumno con ese DNI";
@@ -92,7 +105,6 @@ public class AlumnoController : Controller {
                                 Alumno.CarreraId = carreraOriginal.Id;
                                 Alumno.CarreraName = carreraOriginal.Name;
                                 Alumno.DNI = Dni;
-                                Alumno.Email = Email;
                                 Alumno.Address = Address;
                                 _context.SaveChanges();
                                 Error.NonError = true;
