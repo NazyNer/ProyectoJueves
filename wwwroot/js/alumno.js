@@ -41,7 +41,7 @@ function SearchStudents() {
       tablaAlumnos.empty();
       $.each(students, function (index, student) {
         var fechaFormateada = FormatearFecha(student.birthdate);
-        if (student.isActive) {
+        if (student.estadoAlumno == 1) {
           tablaAlumnos.append(`
             <tr class="table-success">
                 <th scope="row">${student.id}</th>

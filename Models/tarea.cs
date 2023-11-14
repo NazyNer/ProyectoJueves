@@ -13,6 +13,6 @@ namespace ProyectoJueves.Models
         public string? Descripcion { get; set; }
         public int AsignaturaID { get; set; }
         public int ProfesorID { get; set; }
-        public Estado EstadoCarrera { get; set; }
+        public Estado EstadoTarea { get; set; }
     }
 }

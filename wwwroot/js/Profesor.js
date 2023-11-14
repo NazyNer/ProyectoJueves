@@ -36,6 +36,8 @@ function FormatearFecha(fecha) {
 
 
 function SearchProfesores() {
+    let btnCrearProfesor = $("#btnCrearProfesor");
+    btnCrearProfesor.removeClass("displayHidden");
     let tablaAsignaturas = $("#AsignaturasTable");
     tablaAsignaturas.addClass("displayHidden");
     let tablaProfesores = $("#tbody-Profesor");
@@ -73,6 +75,9 @@ function Asignaturas(ProfesorId) {
     let tabla = $("#AsignaturasTable");
     let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
     let profesor = $("#ProfesorAsignatura");
+    let thBoton = $("#thAsignatura");
+    thBoton.empty();
+    thBoton.append(`(Las seleccionadas ya estan relacionadas con el profesor) <button class="btn btn-primary " onclick="GuardarAsignaturas()">Guardar</button><button class="btn btn-danger " onclick="CerrarTablaAsignatura()">Cerrar</button>`)
     tablaAsignaturas.empty();
     $.ajax({
         url: '../../Profesor/Asignaturas',
@@ -87,7 +92,7 @@ function Asignaturas(ProfesorId) {
                     if (devolucion.asignaturasRelacionadas[`${asignatura.asignaturaId}`] != undefined) {
                         tablaAsignaturas.append(`
                         <tr class="table-success">
-                            <td>${asignatura.nombre} <button onclick="Agregartarea(${asignatura.asignaturaId}, ${ProfesorId})">📋Crear tareas</button></td>
+                            <td>${asignatura.nombre}</td>
                             <td><div class="toggle-rect-color"><input type="checkbox"id="${asignatura.asignaturaId}" name="asignaturas" value="${asignatura.asignaturaId}" checked><label for="${asignatura.asignaturaId}"></label></div></td>
                         </tr>
                     `)
@@ -109,7 +114,6 @@ function Asignaturas(ProfesorId) {
         }
     });
 }
-{/* <input type="checkbox" name="asignaturas" value="${asignatura.asignaturaId}"></input>    */ }
 function GuardarAsignaturas() {
     let tabla = $("#AsignaturasTable");
     let tablaAsignaturas = $("#tbody-AsignaturasProfesor")
@@ -174,71 +178,6 @@ function ClearModal() {
     $("#Id").val("");
     $("#lbl-error").text("");
 }
-
-function Agregartarea(asignatura, Profesor) {
-    var Seccion = $("#TablaCrearTarea");
-    Seccion.empty();
-
-    Seccion.append(`
-    <h1>Crear Tarea</h1>
-    
-    <form id="crearTareaForm" onsubmit="return false">
-    <div class="mb-3">
-        <label for="titulo" class="form-label">Título:</label>
-        <input type="text" class="form-control" id="titulo" name="Titulo" required>
-    </div>
-    <div class="mb-3">
-        <label for="descripcion" class="form-label">Descripción:</label>
-        <textarea id="descripcion" class="form-control" name="Descripcion" rows="4" cols="50" required></textarea>
-    <div class="mb-3">
-        <label for="fechaCarga" class="form-label">Fecha de Carga:</label>
-        <input type="date" id="Birthdate" class="form-control" name="FechaDeCarga" required>
-    </div>
-    <div class="mb-3">
-        <label for="fechaVencimiento" class="form-label">Fecha de Vencimiento:</label>
-        <input type="date" id="Birthdate" class="form-control" name="FechaDeVencimiento" required>
-    </div>
-    <input type="number" id="profesorID" class="form-control" name="ProfesorID" value="${Profesor}" disabled>
-    <input type="number" id="AsignaturaID" class="form-control" name="AsignaturaID" value="${asignatura}" disabled>
-    </form>
-    <button class="btn btn-success"onclick="GuardarTarea()">Guardar Tarea</button>
-`);
-}
-
-function GuardarTarea() {
-    var titulo = $("#titulo").val();
-    var descripcion = $("#descripcion").val();
-    var fechaCarga = $("input[name='FechaDeCarga']").val();
-    var fechaVencimiento = $("input[name='FechaDeVencimiento']").val();
-    var profesorID = $("#profesorID").val();
-    var AsignaturaID = $("#AsignaturaID").val();
-
-    $.ajax({
-        url: "../../Tarea/GuardarTarea",
-        data: {
-            titulo: titulo,
-            descripcion: descripcion,
-        FechaCarga: fechaCarga,
-        FechaVencimiento: fechaVencimiento,
-        profesorID: profesorID,
-        asignaturaID: AsignaturaID
-        },
-        type: "POST",
-        dataType: 'json',
-        success: function (respuesta) {
-
-            if(respuesta.nonError){
-                window.location.reload();
-            }else{
-                alert(respuesta.mensaje);
-            }
-        },
-        error: function (error) {
-            console.error("Error al crear la tarea", error);
-        }
-    });
-};
-
 function SaveProfesor() {
     $("#lbl-error").text("");
     let FullName = $("#FullName").val();

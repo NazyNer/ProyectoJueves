@@ -8,10 +8,12 @@ using ProyectoJueves.Data;
 using ProyectoJueves.Models;
 using Microsoft.AspNetCore.Identity;
 using ProyectoJueves.Utils;
+using RolName.Utils;
+using Newtonsoft.Json;
 
 namespace ProyectoJueves.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,Profesor")]
 public class ProfesorController : Controller
 {
 
@@ -30,17 +32,30 @@ public class ProfesorController : Controller
         return View();
     }
 
-    public JsonResult SearchProfesores(int Id)
+    public async Task<JsonResult> SearchProfesores(int Id)
     {
-        var profesor = _context.Profesores.ToList();
-        profesor = profesor.OrderBy(p => p.FullName).ToList();
-        if (Id > 0)
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
         {
-            profesor = profesor.Where(p => p.ProfesorId == Id).ToList();
-        }
+            var profesor = _context.Profesores.ToList();
+            profesor = profesor.OrderBy(p => p.FullName).ToList();
+            RolNames rolName = new RolNames(_context);
+            var rolRealName = rolName.RolNombre(user.Id);
+            if (rolRealName != null)
+            {
+                if (rolRealName == "Admin" || rolRealName == "Profesor"){
+                    if (Id > 0){
+                        profesor = profesor.Where(p => p.ProfesorId == Id).ToList();
+                    }else if(rolRealName == "Profesor"){
+                        profesor = profesor.Where(p => p.UsuarioID == user.Id).ToList();
+                    }
+            }
+            }
         return Json(profesor);
+        }
+        return Json(true);
     }
-
+    [Authorize(Roles = "Admin")]
     public async Task<JsonResult> SaveProfesor(int Id, string FullName, DateTime Birthdate, string Address, int Dni, string Email)
     {
         dynamic Error = new ExpandoObject();
@@ -107,7 +122,7 @@ public class ProfesorController : Controller
         }
         return Json(Error);
     }
-
+    [Authorize(Roles = "Admin")]
     public JsonResult DeleteProfesor(int Id)
     {
         dynamic Error = new ExpandoObject();
@@ -129,7 +144,6 @@ public class ProfesorController : Controller
         }
         return Json(Error);
     }
-
     public JsonResult Asignaturas(int id)
     {
         dynamic Resultado = new ExpandoObject();
@@ -145,7 +159,7 @@ public class ProfesorController : Controller
         Resultado.asignaturasRelacionadas = asignaturasEnRelacion;
         return Json(Resultado);
     }
-
+    [Authorize(Roles = "Admin")]
     public JsonResult GuardarAsignaturas(int[] AsignaturasJs, int ProfesorId)
     {
         dynamic Error = new ExpandoObject();

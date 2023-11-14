@@ -1,7 +1,7 @@
 namespace ProyectoJueves.Utils;
 
 public enum Estado {
-  Activo,
+  Activo = 1,
   Desactivado,
   Eliminado
 }
