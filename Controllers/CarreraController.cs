@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoJueves.Data;
 using ProyectoJueves.Models;
+using ProyectoJueves.Utils;
 
 namespace ProyectoJueves.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class CarreraController : Controller {
     private readonly ILogger<CarreraController> _logger;
     private readonly ApplicationDbContext _context;
@@ -22,7 +23,7 @@ public class CarreraController : Controller {
     }
 
     public JsonResult SearchCarrers(int Id){
-        var carrers = _context.Carreras?.OrderBy(c => c.Name).ToList();
+        var carrers = _context.Carreras?.OrderBy(c => c.Name).Where(c => c.EstadoCarrera != Estado.Eliminado).ToList();
         if (Id > 0)
         {
             var carrer = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault();
@@ -37,7 +38,7 @@ public class CarreraController : Controller {
         error.Msj = "No se pudo guardar la carrera";
         if (Id == 0)
         {
-            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre).FirstOrDefault();
+            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre && c.EstadoCarrera != Estado.Eliminado).FirstOrDefault();
             if (CarreraOriginal != null)
             {
                 error.NonError = false;
@@ -51,6 +52,7 @@ public class CarreraController : Controller {
                     var Carrera = new Carrera(){
                     Name = Nombre,
                     Duration = Duracion,
+                    EstadoCarrera = Estado.Activo
                     };
                     _context.Add(Carrera);
                     _context.SaveChanges();
@@ -60,7 +62,7 @@ public class CarreraController : Controller {
                 
             }
         }else{
-            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre && c.Id != Id).FirstOrDefault();
+            var CarreraOriginal = _context.Carreras.Where(c => c.Name == Nombre && c.Id != Id && c.EstadoCarrera != Estado.Eliminado).FirstOrDefault();
             if (CarreraOriginal != null)
             {
                 error.NonError = false;
@@ -73,6 +75,7 @@ public class CarreraController : Controller {
                     var Carrera = _context.Carreras?.Where(c => c.Id == Id).FirstOrDefault();
                     Carrera.Name = Nombre;
                     Carrera.Duration = Duracion;
+                    Carrera.EstadoCarrera = Estado.Activo;
                     _context.SaveChanges();
                     error.NonError = true;
                     error.Msj = "";
@@ -97,7 +100,7 @@ public class CarreraController : Controller {
                 var AlumnosRelacionados = _context.Alumnos?.Where(a => a.CarreraId == Id).ToList();
                 if (AlumnosRelacionados.Count == 0)
                 {
-                    _context.Remove(carrer);
+                    carrer.EstadoCarrera = Estado.Eliminado;
                     _context.SaveChanges();
                     error.NonError = true;
                     error.Msj = "";

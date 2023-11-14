@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoJueves.Data;
 using ProyectoJueves.Models;
 using Microsoft.AspNetCore.Identity;
-
+using ProyectoJueves.Utils;
 
 namespace ProyectoJueves.Controllers;
-[Authorize]
+
+[Authorize(Roles = "Admin")]
 public class ProfesorController : Controller
 {
 
@@ -53,7 +54,7 @@ public class ProfesorController : Controller
                 if (Id == 0)
                 {
                     Error.Mensaje = "Ya existe un profesor con ese DNI";
-                    var ProfesorEmail = _context.Profesores.Where(p => p.Dni == Dni).FirstOrDefault();
+                    var ProfesorEmail = _context.Profesores.Where(p => p.Dni == Dni && p.EstadoProfesor != Estado.Eliminado).FirstOrDefault();
                     if (ProfesorEmail == null)
                     {
                         Error.Mensaje = "Ya existe un profesor con ese Email";
@@ -65,7 +66,8 @@ public class ProfesorController : Controller
                                 FullName = FullName,
                                 Birthdate = Birthdate,
                                 Address = Address,
-                                Email = Email
+                                Email = Email,
+                                EstadoProfesor = Estado.Activo
                             };
                             _context.Profesores.Add(profesor);
                             _context.SaveChanges();
@@ -87,7 +89,7 @@ public class ProfesorController : Controller
                 else
                 {
                     Error.Mensaje = "Ya existe un profesor con ese DNI";
-                    var profesorDni = _context.Profesores.Where(p => p.ProfesorId != Id && p.Dni == Dni).FirstOrDefault();
+                    var profesorDni = _context.Profesores.Where(p => p.ProfesorId != Id && p.Dni == Dni && p.EstadoProfesor != Estado.Eliminado).FirstOrDefault();
                     if (profesorDni == null)
                     {
                         Error.NonError = true;
@@ -97,6 +99,7 @@ public class ProfesorController : Controller
                         profesor.Address = Address;
                         profesor.Birthdate = Birthdate;
                         profesor.FullName = FullName;
+                        profesor.EstadoProfesor = Estado.Activo;
                         _context.SaveChanges();
                     }
                 }
@@ -115,10 +118,13 @@ public class ProfesorController : Controller
             var profesor = _context.Profesores.Where(p => p.ProfesorId == Id).FirstOrDefault();
             if (profesor != null)
             {
-                Error.NonError = true;
-                Error.Mensaje = "";
-                _context.Profesores.Remove(profesor);
-                _context.SaveChanges();
+                var AsignaturasRelacionadas = _context.ProfesorAsignatura.Where(pa => pa.ProfesorID == Id).ToList();
+                Error.Mensaje = "El profesor seleccionado tiene asignaturas relacionadas";
+                if (AsignaturasRelacionadas.Count == 0)
+                {
+                    profesor.EstadoProfesor = Estado.Eliminado;
+                    _context.SaveChanges();
+                }
             }
         }
         return Json(Error);

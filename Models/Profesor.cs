@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ProyectoJueves.Utils;
 
 namespace ProyectoJueves.Models;
 
@@ -11,4 +12,5 @@ public class Profesor{
     public int Dni { get; set; }
     public string? Email { get; set; }
     public string? UsuarioID { get; set; }
+    public Estado EstadoProfesor { get; set; }
 }

@@ -5,14 +5,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using ProyectoJueves.Data;
 using ProyectoJueves.Models;
+using ProyectoJueves.Utils;
 
 
 namespace ProyectoJueves.Controllers;
 
 
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class AlumnoController : Controller {
 
     private readonly ILogger<AlumnoController> _logger;
@@ -24,17 +26,19 @@ public class AlumnoController : Controller {
         _logger = logger;
         _userManager = userManager;
     }
+
+    
     public IActionResult Index()
     {
-        var Carrera = _context.Carreras?.ToList();
+        var Carrera = _context.Carreras?.Where(c => c.EstadoCarrera == Estado.Activo).ToList();
         ViewBag.CarreraID = new SelectList(Carrera?.OrderBy(p => p.Name), "Id", "Name");
         return View();
     }
 
     public JsonResult SearchStudents(int Id)
     {
-        var alumnos = _context.Alumnos.ToList();
-        alumnos = alumnos.OrderBy(a =>a.CarreraName).ThenBy(a => a.FullName).ToList();
+        var alumnos = _context.Alumnos.Where(a => a.EstadoAlumno != Estado.Eliminado).ToList();
+        alumnos = alumnos.OrderBy(a =>a.EstadoAlumno).ThenBy(a =>a.CarreraName).ThenBy(a => a.FullName).ToList();
         if(Id > 0){
             alumnos = alumnos.Where(a => a.Id == Id).ToList();
         }
@@ -54,50 +58,55 @@ public class AlumnoController : Controller {
             {    
                 Error.NonError = false;
                 Error.Mensaje = "Carrera no encontrada";
-                var carreraOriginal = _context.Carreras?.Where(c => c.Id == CarreraId).FirstOrDefault();
+                var carreraOriginal = _context.Carreras?.Where(c => c.Id == CarreraId && c.EstadoCarrera == Estado.Activo).FirstOrDefault();
                 if (carreraOriginal != null)
                 {
+                    var Alumnos = ((JsonResult)SearchStudents(0)).Value as List<Alumno>;
                     if (Id == 0)
                     {
                         Error.Mensaje = "Ya existe un alumno con ese DNI";
-                        var AlumnoEmail = _context.Alumnos.Where(p => p.DNI == Dni).FirstOrDefault();
-                        if (AlumnoEmail == null)
+                        var AlumnoDNI = Alumnos.Where(p => p.DNI == Dni).FirstOrDefault();
+                        if (AlumnoDNI == null)
                         {
-                            //Crear Alumno
-                            var Alumno = new Alumno{
-                            FullName = FullName,
-                            Birthdate = Birthdate,
-                            CarreraId = carreraOriginal.Id,
-                            CarreraName = carreraOriginal.Name,
-                            DNI = Dni,
-                            Email = Email,
-                            Address = Address,
-                            IsActive = true
-                            };
-                            _context.Alumnos.Add(Alumno);
-                            _context.SaveChanges();
+                            Error.Mensaje = "Ya existe un alumno con ese EMAIL";
+                            var AlumnoEmail = Alumnos.Where(p => p.Email == Email).FirstOrDefault();
+                            if (AlumnoEmail == null){
+                                //Crear Alumno
+                                var Alumno = new Alumno{
+                                FullName = FullName,
+                                Birthdate = Birthdate,
+                                CarreraId = carreraOriginal.Id,
+                                CarreraName = carreraOriginal.Name,
+                                DNI = Dni,
+                                Email = Email,
+                                Address = Address,
+                                EstadoAlumno = Estado.Activo
+                                };
+                                _context.Alumnos.Add(Alumno);
+                                _context.SaveChanges();
 
-                            var user = new IdentityUser { UserName = FullName, Email = Email};
-                            var contraseña = Dni.ToString();
-                            var result = await _userManager.CreateAsync(user, contraseña);
-                            if(result.Succeeded){
-                                var Rol = _context.Roles.Where(r => r.Name == "Estudiante").SingleOrDefault();
-                                var usuarioAsignar = await _userManager.FindByEmailAsync(Email);
-                                var Result = await _userManager.AddToRoleAsync(usuarioAsignar, Rol.Name);
-                                if(Result.Succeeded){
-                                    Error.NonError = true;
-                                    Error.Mensaje = "Datos guardados correctamente";
+                                var user = new IdentityUser { UserName = Email, Email = Email};
+                                var contraseña = Dni.ToString();
+                                var result = await _userManager.CreateAsync(user, contraseña);
+                                if(result.Succeeded){
+                                    var Rol = _context.Roles.Where(r => r.Name == "Estudiante").SingleOrDefault();
+                                    var usuarioAsignar = await _userManager.FindByEmailAsync(Email);
+                                    var Result = await _userManager.AddToRoleAsync(usuarioAsignar, Rol.Name);
+                                    if(Result.Succeeded){
+                                        Error.NonError = true;
+                                        Error.Mensaje = "Datos guardados correctamente";
+                                    }
                                 }
                             }
                         }
                     }else{
                         Error.Mensaje = "Ya existe un alumno con ese DNI";
-                        var AlumnoEmail = _context.Alumnos.Where(p => p.DNI == Dni && p.Id != Id).FirstOrDefault();
+                        var AlumnoEmail = Alumnos.Where(p => p.DNI == Dni && p.Id != Id).FirstOrDefault();
                         if (AlumnoEmail == null)
                         {
                             //Editar Alumno
                             Error.Mensaje = "No se encontro el alumno seleccionado";
-                            var Alumno = _context.Alumnos.Where(a => a.Id == Id).FirstOrDefault();
+                            var Alumno = Alumnos.Where(a => a.Id == Id).FirstOrDefault();
                             if (Alumno != null)
                             {
                                 Alumno.FullName = FullName;
@@ -106,6 +115,7 @@ public class AlumnoController : Controller {
                                 Alumno.CarreraName = carreraOriginal.Name;
                                 Alumno.DNI = Dni;
                                 Alumno.Address = Address;
+                                Alumno.EstadoAlumno = Estado.Activo;
                                 _context.SaveChanges();
                                 Error.NonError = true;
                                 Error.Mensaje = "Datos guardados correctamente";
@@ -128,10 +138,10 @@ public class AlumnoController : Controller {
         {
             Error.NonError = false;
             Error.Mensaje = "Primero desactivar al alumno "+ Alumno.FullName +" y despues volver a intentar";
-            if(!Alumno.IsActive){
+            if(Alumno.EstadoAlumno == Estado.Desactivado){
                 Error.NonError = true;
                 Error.Mensaje = "";
-                _context.Alumnos.Remove(Alumno);
+                Alumno.EstadoAlumno = Estado.Eliminado;
                 _context.SaveChanges();
             }
 
@@ -148,11 +158,12 @@ public class AlumnoController : Controller {
         {
             Error.NonError = true;
             Error.Mensaje = "";
-            if (Alumno.IsActive)
+            if (Alumno.EstadoAlumno == Estado.Activo)
             {
-                Alumno.IsActive = false;
-            }else{
-                Alumno.IsActive = true;
+                Alumno.EstadoAlumno = Estado.Desactivado;
+            }else if (Alumno.EstadoAlumno == Estado.Desactivado)
+            {
+                Alumno.EstadoAlumno = Estado.Activo;
             }
             _context.SaveChanges();
         }

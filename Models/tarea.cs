@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ProyectoJueves.Utils;
 
 namespace ProyectoJueves.Models
 {
@@ -12,5 +13,6 @@ namespace ProyectoJueves.Models
         public string? Descripcion { get; set; }
         public int AsignaturaID { get; set; }
         public int ProfesorID { get; set; }
+        public Estado EstadoCarrera { get; set; }
     }
 }

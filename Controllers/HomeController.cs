@@ -56,14 +56,14 @@ public class HomeController : Controller
         {
             var ProfesorCreado = await _userManager.FindByEmailAsync(profesor.Email);
             if(ProfesorCreado == null){
-                var user = new IdentityUser { UserName = profesor.FullName, Email = profesor.Email};
+                var user = new IdentityUser { UserName = profesor.Email, Email = profesor.Email};
                 var contraseña = profesor.Dni.ToString();
                 var ProfesorCrear = await _userManager.CreateAsync(user, contraseña);
                 if(ProfesorCrear.Succeeded){
                     var usuarioCreado = await _userManager.FindByEmailAsync(profesor.Email);
                     var RolResult = await _userManager.AddToRoleAsync(usuarioCreado, RolProfe.Name);
                 }
-                profesor.UsuarioID = ProfesorCreado.Id;
+                profesor.UsuarioID = user.Id;
                 _context.SaveChanges();
             }
         }
@@ -73,14 +73,14 @@ public class HomeController : Controller
         {
             var EstudianteCreado = await _userManager.FindByEmailAsync(estudiante.Email);
             if(EstudianteCreado == null){
-                var user = new IdentityUser { UserName = estudiante.FullName, Email = estudiante.Email};
+                var user = new IdentityUser { UserName = estudiante.Email, Email = estudiante.Email};
                 var contraseña = estudiante.DNI.ToString();
                 var EstudianteCrear = await _userManager.CreateAsync(user, contraseña);
                 if(EstudianteCrear.Succeeded){
                     var usuarioCreado = await _userManager.FindByEmailAsync(estudiante.Email);
                     var RolResult = await _userManager.AddToRoleAsync(usuarioCreado, RolEstudiante.Name);
                 }
-                estudiante.UsuarioID = EstudianteCreado.Id;
+                estudiante.UsuarioID = user.Id;
                 _context.SaveChanges();
             }
         }

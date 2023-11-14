@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ProyectoJueves.Utils;
 
 namespace ProyectoJueves.Models;
 
@@ -12,7 +13,6 @@ public class Alumno {
     public string? Email { get; set; }
     public int CarreraId { get; set; }
     public string? CarreraName { get; set;}
-    public bool IsActive { get; set; }
+    public Estado EstadoAlumno { get; set; }
     public string? UsuarioID { get; set; }
-    public virtual Carrera? Carrera { get; set; }
 }
