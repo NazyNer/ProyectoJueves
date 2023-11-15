@@ -1,6 +1,7 @@
 window.onload = function () {
   let asignatura = $("#AsignaturaId").val();
   Tareas(asignatura);
+  TablaListadoTareas();
 };
 
 function FormatearFecha(fecha) {
@@ -8,7 +9,32 @@ function FormatearFecha(fecha) {
   var fechaFormateada = partes[2] + "/" + partes[1] + "/" + partes[0];
   return fechaFormateada;
 }
-
+function TablaListadoTareas(){
+  let ListadoTarea = $("#ListadoTareaBody");
+  ListadoTarea.empty()
+  $.ajax({
+    url: '/Tarea/TodasTareas',
+    type: 'GET',
+    success: function (Tareas){
+      console.log(Tareas);
+      $.each(Tareas, function (index, tarea){
+        console.log(tarea);
+        let fechaDeVencimiento = FormatearFecha(tarea.fechaDeVencimiento);
+        let fechaDeCarga = FormatearFecha(tarea.fechaDeCarga);
+        ListadoTarea.append(`
+        <tr>
+          <td>${fechaDeCarga}</td>
+          <td>${fechaDeVencimiento}</td>
+          <td>${tarea.titulo}</td>
+          <td>${tarea.descripcion}</td>
+          <td>${tarea.asignatura}</td>
+          <td>${tarea.profesor}</td>
+        </tr>
+        `)
+      });
+    }
+  });
+}
 $('#AsignaturaId').change(function () {
   var selectedValue = $(this).val();
   Tareas(selectedValue);

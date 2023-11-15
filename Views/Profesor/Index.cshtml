@@ -53,13 +53,26 @@
           <th scope="col">DNI</th>
           <th scope="col">Nombre completo</th>
           <th scope="col">Fecha de nacimiento</th>
-          <th scope="col"><button id="btnCrearProfesor" class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary"
+          <th scope="col"><button onclick="CrearPDFProfesores()">Pdf Profesores</button><button id="btnCrearProfesor" class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary"
               data-bs-toggle="modal" data-bs-target="#staticBackdrop">Crear Nuevo</button></th>
           <th scope="col">Email</th>
           <th scope="col">Direccion</th>
         </tr>
       </thead>
       <tbody id="tbody-Profesor">
+      </tbody>
+    </table>
+    <table id="ListadoProfesor" class="table table-dark table-striped table-hover" hidden>
+      <thead>
+        <tr>
+          <th scope="col">DNI</th>
+          <th scope="col">Nombre completo</th>
+          <th scope="col">Fecha de nacimiento</th>
+          <th scope="col">Email</th>
+          <th scope="col">Direccion</th>
+        </tr>
+      </thead>
+      <tbody id="ListadoProfesorBody">
       </tbody>
     </table>
   </div>
@@ -79,6 +92,8 @@
 
 @if(@User.IsInRole("Admin")){
   @section Scripts {
+    <script src="~/lib/jspdf/jspdf.umd.js"></script>
+    <script src="~/lib/jspdf/jspdf.plugin.autotable.js"></script>
     <script src="~/js/Profesor.js"></script>
   }
 }
@@ -88,3 +103,49 @@
     <script src="~/js/Profesor-Profesor.js"></script>
   }
 }
+
+<script>
+    function CrearPDFProfesores(){
+        var doc = new jspdf.jsPDF();
+        var totalPagesExp = '{total_pages_count_string}';
+
+        doc.autoTable({
+            html: '#ListadoProfesor',
+            willDrawPage: function (data) {
+                // Header
+                doc.setFontSize(20)
+                doc.setTextColor(40)
+                doc.text('Profesores', data.settings.margin.left + 15, 22)
+            },
+            columns: [
+            {dataKey: 'DNI', title: 'DNI'},
+            {dataKey: 'Nombre completo', title: 'Nombre completo'},
+            {dataKey: 'Fecha de nacimiento', title: 'Fecha de nacimiento'},
+            {dataKey: 'Email', title: 'Email'},
+            {dataKey: 'Direccion', title: 'Direccion'},
+            ],
+            bodyStyles: {minCellHeight: 25},
+            theme:'grid',
+            headStyles: { fillColor: [45, 26, 22] },
+            didDrawPage: function (data) {
+                // Footer
+                var str = 'pagina ' + doc.internal.getNumberOfPages()
+                if (typeof doc.putTotalPages === 'function') {
+                    str = str + ' de ' + totalPagesExp
+                }
+                doc.setFontSize(10)
+                var pageSize = doc.internal.pageSize
+                var pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight()
+                doc.text(str, data.settings.margin.left, pageHeight - 10)
+            },
+            margin: { top: 30 }
+        });
+        if (typeof doc.putTotalPages === 'function') {
+            doc.putTotalPages(totalPagesExp)
+        }
+        var dia = new Date();
+        dia = `${dia.getDate()}-${dia.getMonth() + 1}-${dia.getYear()}`;
+        doc.save(`Profesores${dia}.pdf`);
+
+    }
+</script>

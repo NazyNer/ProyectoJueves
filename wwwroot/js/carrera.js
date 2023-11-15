@@ -8,6 +8,8 @@ function ClearModal() {
 
 function SearchCarrers() {
     let tablaCarrera = $("#tbody-Carrer");
+    let listadoCarrera = $("#ListadoCarrerBody")
+    listadoCarrera.empty();
     tablaCarrera.empty();
     $.ajax({
         // la URL para la petición
@@ -34,6 +36,12 @@ function SearchCarrers() {
                     <td>${carrer.duration}</td>
                 </tr>
                 `);
+                listadoCarrera.append(`
+                <tr>
+                    <td>${carrer.name}</td>
+                    <td>${carrer.duration}</td>
+                </tr>
+                `)
             })
         }
     });
@@ -121,8 +129,6 @@ function DeleteCarrer(id) {
         
     });
 }
-
-
 
 $("#Nombre").on("input", function () {
     var input = $(this);

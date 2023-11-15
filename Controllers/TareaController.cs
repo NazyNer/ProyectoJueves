@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoJueves.Data;
 using ProyectoJueves.Migrations;
 using ProyectoJueves.Models;
+using ProyectoJueves.Utils;
 using RolName.Utils;
 
 namespace TareaController.Controllers;
@@ -62,7 +63,26 @@ public class TareaController : Controller
     }
     return View();
   }
-
+  
+  public JsonResult TodasTareas(){
+    var Tareas = _context.Tareas.ToList();
+    Tareas = Tareas.OrderBy(t => t.FechaDeCarga).ToList();
+    List<ListadoTarea> listadoTareas = new List<ListadoTarea>();
+    foreach(var tarea in Tareas){
+      var TareaListado = new ListadoTarea{
+        FechaDeCarga = tarea.FechaDeCarga,
+        FechaDeVencimiento = tarea.FechaDeVencimiento,
+        Titulo = tarea.Titulo,
+        Descripcion = tarea.Descripcion
+      };
+      var asignatura = _context.Asignaturas.Where(a => a.AsignaturaId == tarea.AsignaturaID).Select(a => a.Nombre).FirstOrDefault();
+      var profesor = _context.Profesores.Where(a => a.ProfesorId == tarea.ProfesorID).Select(a => a.FullName).FirstOrDefault();
+      TareaListado.Asignatura = asignatura;
+      TareaListado.Profesor = profesor;
+      listadoTareas.Add(TareaListado);
+    }
+    return Json(listadoTareas);
+  }
   public JsonResult ObtenerDatos(int id, int asignaturaId)
   {
     dynamic Error = new ExpandoObject();

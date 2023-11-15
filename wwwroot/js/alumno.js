@@ -1,36 +1,38 @@
 window.onload = function() {
-  $.datepicker.regional['es'] = {
-    closeText: 'Cerrar',
-    prevText: '&#x3C;Ant',
-    nextText: 'Sig&#x3E;',
-    currentText: 'Hoy',
-    monthNames: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
-    monthNamesShort: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
-    dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
-    dayNamesShort: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
-    dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
-    weekHeader: 'Sm',
-    dateFormat: 'dd/mm/yy',
-    firstDay: 1,
-    isRTL: false,
-    showMonthAfterYear: false,
-    yearSuffix: ''
-  };
-  $("#Birthdate").datepicker({
-    changeMonth: true,
-    changeYear: true,
-    showAnim: "fold",
-    minDate: "-70Y",
-    maxDate: "-12Y",
-    beforeShow: function(input, inst) {
-      inst.settings = $.extend(inst.settings, $.datepicker.regional['es']);
-    }
-  });
+  // $.datepicker.regional['es'] = {
+  //   closeText: 'Cerrar',
+  //   prevText: '&#x3C;Ant',
+  //   nextText: 'Sig&#x3E;',
+  //   currentText: 'Hoy',
+  //   monthNames: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+  //   monthNamesShort: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+  //   dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+  //   dayNamesShort: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
+  //   dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
+  //   weekHeader: 'Sm',
+  //   dateFormat: 'dd/mm/yy',
+  //   firstDay: 1,
+  //   isRTL: false,
+  //   showMonthAfterYear: false,
+  //   yearSuffix: ''
+  // };
+  // $("#Birthdate").datepicker({
+  //   changeMonth: true,
+  //   changeYear: true,
+  //   showAnim: "fold",
+  //   minDate: "-70Y",
+  //   maxDate: "-12Y",
+  //   beforeShow: function(input, inst) {
+  //     inst.settings = $.extend(inst.settings, $.datepicker.regional['es']);
+  //   }
+  // });
   SearchStudents();
 }
 
 function SearchStudents() {
   let tablaAlumnos = $("#tbody-Alumno");
+  let listadoAlumno = $("#ListadoAlumnoBody");
+  listadoAlumno.empty();
   tablaAlumnos.empty();
   $.ajax({
     url: '../../Alumno/SearchStudents',
@@ -68,6 +70,13 @@ function SearchStudents() {
             </tr>
             `);
         }
+        listadoAlumno.append(`
+        <tr class="table-dark">
+            <td>${student.fullName}</td>
+            <td>${fechaFormateada}</td>
+            <td>${student.carreraName}</td>
+        </tr>
+        `)
       })
   }
   })

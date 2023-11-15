@@ -48,15 +48,72 @@
       <th scope="col">#</th>
       <th scope="col">Nombre completo</th>
       <th scope="col">Fecha de nacimiento</th>
-      <th scope="col"><button class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Crear Nuevo</button></th>
+      <th scope="col"><button onclick="CrearPDFAlumno()">Pdf Alumnos</button><button class="btn btn-success" type="button" onclick="ClearModal()" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Crear Nuevo</button></th>
       <th scope="col">Carrera</th>
     </tr>
   </thead>
   <tbody id="tbody-Alumno">
   </tbody>
 </table>
+ <table id="ListadoAlumno" class="table table-dark table-striped table-hover" hidden>
+  <thead>
+    <tr>
+      <th scope="col">Nombre completo</th>
+      <th scope="col">Fecha de nacimiento</th>
+      <th scope="col">Carrera</th>
+    </tr>
+  </thead>
+  <tbody id="ListadoAlumnoBody">
+  </tbody>
+</table>
 </div>
 
 @section Scripts {
-    <script src="~/js/alumno.js"></script>
+  <script src="~/lib/jspdf/jspdf.umd.js"></script>
+  <script src="~/lib/jspdf/jspdf.plugin.autotable.js"></script>
+  <script src="~/js/alumno.js"></script>
 }
+
+<script>
+    function CrearPDFAlumno(){
+        var doc = new jspdf.jsPDF();
+        var totalPagesExp = '{total_pages_count_string}';
+
+        doc.autoTable({
+            html: '#ListadoAlumno',
+            willDrawPage: function (data) {
+                // Header
+                doc.setFontSize(20)
+                doc.setTextColor(40)
+                doc.text('Alumnos', data.settings.margin.left + 15, 22)
+            },
+            columns: [
+            {dataKey: 'Nombre completo', title: 'Nombre completo'},
+            {dataKey: 'Fecha de nacimiento', title: 'Fecha de nacimiento'},
+            {dataKey: 'Carrera', title: 'Carrera'},
+            ],
+            bodyStyles: {minCellHeight: 25},
+            theme:'grid',
+            headStyles: { fillColor: [45, 26, 22] },
+            didDrawPage: function (data) {
+                // Footer
+                var str = 'pagina ' + doc.internal.getNumberOfPages()
+                if (typeof doc.putTotalPages === 'function') {
+                    str = str + ' de ' + totalPagesExp
+                }
+                doc.setFontSize(10)
+                var pageSize = doc.internal.pageSize
+                var pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight()
+                doc.text(str, data.settings.margin.left, pageHeight - 10)
+            },
+            margin: { top: 30 }
+        });
+        if (typeof doc.putTotalPages === 'function') {
+            doc.putTotalPages(totalPagesExp)
+        }
+        var dia = new Date();
+        dia = `${dia.getDate()}-${dia.getMonth() + 1}-${dia.getYear()}`;
+        doc.save(`Alumno${dia}.pdf`);
+
+    }
+</script>
