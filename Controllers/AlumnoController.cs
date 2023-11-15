@@ -45,6 +45,32 @@ public class AlumnoController : Controller {
         return Json(alumnos);
     }
 
+    public JsonResult ListadoAlumnoXCarreras(){
+        var carreras = _context.Carreras.ToList();
+        carreras = carreras.OrderBy(c => c.Name).ToList();
+        List<VistaCarrera> ListadoCarreras = new List<VistaCarrera>();
+        foreach (var carrera in carreras)
+        {
+            List<VistaAlumno> ListadoAlumnosCarrera= new List<VistaAlumno>();
+            var alumnos = _context.Alumnos.Where(a => a.CarreraId == carrera.Id).OrderBy(a => a.FullName).ToList();
+            foreach (var alumno in alumnos){
+                var alumoMostrar = new VistaAlumno{
+                    AlumnoID = alumno.Id,
+                    AlumnoNombre = alumno.FullName
+                };
+                ListadoAlumnosCarrera.Add(alumoMostrar);
+            }
+            var carreraMostrar = new VistaCarrera{
+                CarreraID = carrera.Id,
+                CarreraNombre = carrera.Name,
+                ListaAlumnos = ListadoAlumnosCarrera
+            };
+            ListadoCarreras.Add(carreraMostrar);
+        }
+        return Json(ListadoCarreras);
+    }
+
+
     public async Task<JsonResult> GuardarAlumno(int Id, string FullName, int Dni, string Email, string Address, DateTime Birthdate, int CarreraId)
     {
         dynamic Error = new ExpandoObject();
